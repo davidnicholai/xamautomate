@@ -54,11 +54,21 @@ namespace davidnicholai.Xamautomate
 
         public void AddQueryFromAutomationId(string key, string automationId)
         {
+            if (_queries.ContainsKey(key))
+            {
+                throw new ArgumentException();
+            }
+
             _queries.Add(key, e => e.Marked(automationId));
         }
 
         public void AddQueryFromButtonText(string key, string buttonText)
         {
+            if (_queries.ContainsKey(key))
+            {
+                throw new ArgumentException();
+            }
+
             _queries.Add(key, e => e.Text(buttonText));
         }
 
