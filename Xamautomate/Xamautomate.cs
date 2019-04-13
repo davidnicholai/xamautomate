@@ -4,7 +4,7 @@ using System.Linq;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 
-namespace Xamautomate
+namespace davidnicholai.Xamautomate
 {
     public class Xamautomate
     {
@@ -16,6 +16,36 @@ namespace Xamautomate
             _app = configureApp(platform, bundlePath);
             _queries = new Dictionary<string, Func<AppQuery, AppQuery>>();
         }
+
+        #region Private Methods
+
+        private Func<AppQuery, AppQuery> getQueryFromKey(string key)
+        {
+            try
+            {
+                return _queries.FirstOrDefault(x => x.Key.Equals(key)).Value;
+            }
+            catch
+            {
+                throw new ArgumentNullException(key);
+            }
+        }
+
+        private IApp configureApp(Platform platform, string bundlePath = "")
+        {
+            if (platform.Equals(Platform.Android))
+            {
+                return string.IsNullOrEmpty(bundlePath) ?
+                    ConfigureApp.Android.StartApp() :
+                    ConfigureApp.Android.ApkFile(bundlePath).StartApp();
+            }
+
+            return string.IsNullOrEmpty(bundlePath) ?
+                ConfigureApp.iOS.StartApp() :
+                ConfigureApp.iOS.AppBundle(bundlePath).StartApp();
+        }
+
+        #endregion
 
         public void AddQuery(string key, Func<AppQuery, AppQuery> query)
         {
@@ -58,38 +88,37 @@ namespace Xamautomate
                 _app.WaitForElement(query);
                 _app.Tap(query);
             }
-            catch (Exception timeoutException) { }
+            catch { }
         }
 
-        public void ScrollTo(string keyToTap, string keyToScroll, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true, TimeSpan? timeout = default(TimeSpan?))
+        public void Back()
+        {
+            _app.Back();
+        }
+
+        public void ClearText()
+        {
+            _app.ClearText();
+        }
+
+        public void PressEnter()
+        {
+            _app.PressEnter();
+        }
+
+        public void EnterText(string text)
+        {
+            _app.EnterText(text);
+        }
+
+        public void EnterText(string key, string text)
+        {
+            _app.EnterText(getQueryFromKey(key), text);
+        }
+
+        public void ScrollDownTo(string keyToTap, string keyToScroll, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true, TimeSpan? timeout = default(TimeSpan?))
         {
             _app.ScrollDownTo(getQueryFromKey(keyToTap), getQueryFromKey(keyToScroll), strategy, swipePercentage, swipeSpeed, withInertia, timeout);
-        }
-
-        private Func<AppQuery, AppQuery> getQueryFromKey(string key)
-        {
-            try
-            {
-                return _queries.FirstOrDefault(x => x.Key.Equals(key)).Value;
-            }
-            catch
-            {
-                throw new ArgumentNullException(key);
-            }
-        }
-
-        private IApp configureApp(Platform platform, string bundlePath = "")
-        {
-            if (platform.Equals(Platform.Android))
-            {
-                return string.IsNullOrEmpty(bundlePath) ?
-                    ConfigureApp.Android.StartApp() :
-                    ConfigureApp.Android.ApkFile(bundlePath).StartApp();
-            }
-
-            return string.IsNullOrEmpty(bundlePath) ?
-                ConfigureApp.iOS.StartApp() :
-                ConfigureApp.iOS.AppBundle(bundlePath).StartApp();
         }
     }
 }
